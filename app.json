@@ -1,0 +1,18 @@
+{
+    "id": "3a114905-2e8f-4d32-9133-fc668c048dbd",
+    "version": "0.0.1",
+    "requiredApiVersion": "^1.19.0",
+    "iconFile": "icon.png",
+    "author": {
+        "name": "Kartik Gupta",
+        "homepage": "https://find-kartik-gupta.vercel.app/",
+        "support": "https://github.com/Kartik18g"
+    },
+    "name": "SpeechToText",
+    "nameSlug": "speechtotext",
+    "classFile": "SpeechToTextApp.ts",
+    "description": "Rocket.Chat app that adds the support of transcribing previously sent audio messages on demand, and new audio messages sent with the transcription selected.",
+    "implements": [
+        "IPostMessageSent"
+    ]
+}
