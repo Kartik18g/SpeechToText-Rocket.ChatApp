@@ -4,6 +4,7 @@ import {
     IEnvironmentRead,
     IHttp,
     ILogger,
+    IModify,
     IPersistence,
     IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
@@ -13,6 +14,7 @@ import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { settings } from './config/Settings';
 import { webhookEndpoint } from './endpoints/webhookEndpoint';
+import { initiatorMessage } from './helpers/initiatorMessage';
 import { QueueAudio } from './helpers/QueueAudio';
 
 export class SpeechToTextApp extends App implements IPostMessageSent {
@@ -61,12 +63,24 @@ export class SpeechToTextApp extends App implements IPostMessageSent {
         message: IMessage,
         read: IRead,
         http: IHttp,
-        persistence: IPersistence
+        persistence: IPersistence,
+        modify: IModify,
     ): Promise<void> {
-        console.log('--->>>postMessageSent', message.attachments && message.attachments[0].audioUrl)
-        this.queueAudio.queue(message, http, read)
+        // console.log('--->>>postMessageSent', message.attachments && message.attachments[0].audioUrl)
+        // this.queueAudio.queue(message, http, read)
+        const sender = message.sender; // the user calling the slashcommand
+        const room = message.room; // the current room
+
+        const data = {
+            room: room,
+            sender: sender,
+            rid: message.room.id,
+            userId: message.sender.id,
+            fileId: message.file?._id,
+        };
+
+
+        await initiatorMessage({ data, read, persistence, modify, http });
 
     }
-
-
 }
