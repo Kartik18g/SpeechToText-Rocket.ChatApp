@@ -4,20 +4,21 @@ import {
     IEnvironmentRead,
     IHttp,
     ILogger,
+    IMessageBuilder,
     IModify,
     IPersistence,
     IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPostMessageSent } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IPostMessageSent, IPreMessageSentModify } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { settings } from './config/Settings';
 import { webhookEndpoint } from './endpoints/webhookEndpoint';
 import { initiatorMessage } from './helpers/initiatorMessage';
 import { QueueAudio } from './helpers/QueueAudio';
 
-export class SpeechToTextApp extends App implements IPostMessageSent {
+export class SpeechToTextApp extends App implements IPreMessageSentModify {
     private queueAudio: QueueAudio;
 
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
@@ -45,7 +46,7 @@ export class SpeechToTextApp extends App implements IPostMessageSent {
     }
 
 
-    public async checkPostMessageSent(
+    public async checkPreMessageSentModify(
         message: IMessage,
         read: IRead,
         http: IHttp
@@ -59,28 +60,17 @@ export class SpeechToTextApp extends App implements IPostMessageSent {
         return false;
     }
 
-    public async executePostMessageSent(
+    async executePreMessageSentModify(
         message: IMessage,
+        builder: IMessageBuilder,
         read: IRead,
         http: IHttp,
-        persistence: IPersistence,
-        modify: IModify,
-    ): Promise<void> {
-        // console.log('--->>>postMessageSent', message.attachments && message.attachments[0].audioUrl)
-        // this.queueAudio.queue(message, http, read)
-        const sender = message.sender; // the user calling the slashcommand
-        const room = message.room; // the current room
+        persist: IPersistence,
+    ): Promise<IMessage> {
+        console.log(message)
+        const block = builder.addBlocks
 
-        const data = {
-            room: room,
-            sender: sender,
-            rid: message.room.id,
-            userId: message.sender.id,
-            fileId: message.file?._id,
-        };
-
-
-        await initiatorMessage({ data, read, persistence, modify, http });
-
+        const msg = builder.setText("aaho").setRoom(message.room).setSender(message.sender);
+        return msg.getMessage()
     }
 }
