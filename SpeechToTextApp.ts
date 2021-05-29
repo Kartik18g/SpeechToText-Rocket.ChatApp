@@ -5,13 +5,14 @@ import {
     IHttp,
     ILogger,
     IMessageBuilder,
+    IMessageExtender,
     IModify,
     IPersistence,
     IRead,
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPostMessageSent, IPreMessageSentModify } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IPostMessageSent, IPreMessageSentExtend, IPreMessageSentModify } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { BlockBuilder, ButtonStyle } from '@rocket.chat/apps-engine/definition/uikit';
 import { settings } from './config/Settings';
@@ -19,7 +20,7 @@ import { webhookEndpoint } from './endpoints/webhookEndpoint';
 import { initiatorMessage } from './helpers/initiatorMessage';
 import { QueueAudio } from './helpers/QueueAudio';
 
-export class SpeechToTextApp extends App implements IPreMessageSentModify {
+export class SpeechToTextApp extends App implements IPreMessageSentExtend {
     private queueAudio: QueueAudio;
     private appId: string
 
@@ -49,7 +50,7 @@ export class SpeechToTextApp extends App implements IPreMessageSentModify {
     }
 
 
-    public async checkPreMessageSentModify(
+    public async checkPreMessageSentExtend(
         message: IMessage,
         read: IRead,
         http: IHttp
@@ -63,15 +64,16 @@ export class SpeechToTextApp extends App implements IPreMessageSentModify {
         return false;
     }
 
-    async executePreMessageSentModify(
+    async executePreMessageSentExtend(
         message: IMessage,
-        builder: IMessageBuilder,
+        extend: IMessageExtender,
         read: IRead,
         http: IHttp,
         persist: IPersistence,
     ): Promise<IMessage> {
         console.log(message)
         const block = new BlockBuilder(this.appId)
+        const attachment = extend.addAttachment(block)
         block.addActionsBlock({
             blockId: "sttQueue",
             elements: [
@@ -84,10 +86,10 @@ export class SpeechToTextApp extends App implements IPreMessageSentModify {
             ],
         });
 
+
         // const block = builder.addBlocks()
 
-        const msg = builder.addBlocks(block);
 
-        return msg.getMessage()
+        return message
     }
 }

@@ -13,6 +13,6 @@
     "classFile": "SpeechToTextApp.ts",
     "description": "Rocket.Chat app that adds the support of transcribing previously sent audio messages on demand, and new audio messages sent with the transcription selected.",
     "implements": [
-        "IPreMessageSentModify"
+        "IPreMessageSentExtend"
     ]
 }
