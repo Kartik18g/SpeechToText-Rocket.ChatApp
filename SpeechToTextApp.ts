@@ -13,6 +13,7 @@ import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/
 import { App } from '@rocket.chat/apps-engine/definition/App';
 import { IMessage, IPostMessageSent, IPreMessageSentModify } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
+import { BlockBuilder, ButtonStyle } from '@rocket.chat/apps-engine/definition/uikit';
 import { settings } from './config/Settings';
 import { webhookEndpoint } from './endpoints/webhookEndpoint';
 import { initiatorMessage } from './helpers/initiatorMessage';
@@ -20,11 +21,13 @@ import { QueueAudio } from './helpers/QueueAudio';
 
 export class SpeechToTextApp extends App implements IPreMessageSentModify {
     private queueAudio: QueueAudio;
+    private appId: string
 
     constructor(info: IAppInfo, logger: ILogger, accessors: IAppAccessors) {
         super(info, logger, accessors);
+        console.log('appInfo', info)
         this.queueAudio = new QueueAudio();
-
+        this.appId = info.id
     }
 
 
@@ -68,9 +71,23 @@ export class SpeechToTextApp extends App implements IPreMessageSentModify {
         persist: IPersistence,
     ): Promise<IMessage> {
         console.log(message)
-        const block = builder.addBlocks
+        const block = new BlockBuilder(this.appId)
+        block.addActionsBlock({
+            blockId: "sttQueue",
+            elements: [
+                block.newButtonElement({
+                    actionId: "Transcribe",
+                    text: block.newPlainTextObject("Transcribe"),
+                    value: JSON.stringify('hola'),
+                    style: ButtonStyle.PRIMARY,
+                }),
+            ],
+        });
 
-        const msg = builder.setText("aaho").setRoom(message.room).setSender(message.sender);
+        // const block = builder.addBlocks()
+
+        const msg = builder.addBlocks(block);
+
         return msg.getMessage()
     }
 }
