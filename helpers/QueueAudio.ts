@@ -1,4 +1,4 @@
-import { IHttp, ILogger, IRead } from "@rocket.chat/apps-engine/definition/accessors";
+import { IHttp, ILogger, IModify, IRead } from "@rocket.chat/apps-engine/definition/accessors";
 import { IMessage } from "@rocket.chat/apps-engine/definition/messages";
 import { generateJWT } from './JWTHelper'
 
@@ -8,7 +8,7 @@ export class QueueAudio {
     public host = "http://localhost:3000"
 
 
-    public async queue(message: IMessage, http: IHttp, read: IRead): Promise<void> {
+    public async queue(message: IMessage, http: IHttp, read: IRead, modify: IModify): Promise<void> {
 
 
         const api_key: string = await read
@@ -68,6 +68,7 @@ export class QueueAudio {
                                     ["content-type"]: "application/json",
                                 },
                             });
+
                             console.log(response.data);
                             break;
                     }
@@ -86,6 +87,7 @@ export class QueueAudio {
         console.log("hifromadp")
     }
 }
+
 function generateJWTfunc(generateJWTfunc: any) {
     throw new Error("Function not implemented.");
 }

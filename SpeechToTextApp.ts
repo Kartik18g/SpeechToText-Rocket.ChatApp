@@ -12,9 +12,10 @@ import {
 } from '@rocket.chat/apps-engine/definition/accessors';
 import { ApiSecurity, ApiVisibility } from '@rocket.chat/apps-engine/definition/api';
 import { App } from '@rocket.chat/apps-engine/definition/App';
-import { IMessage, IPostMessageSent, IPreMessageSentExtend, IPreMessageSentModify } from '@rocket.chat/apps-engine/definition/messages';
+import { IMessage, IMessageAttachment, IPostMessageSent, IPreMessageSentExtend, IPreMessageSentModify, MessageActionButtonsAlignment, MessageActionType } from '@rocket.chat/apps-engine/definition/messages';
 import { IAppInfo } from '@rocket.chat/apps-engine/definition/metadata';
 import { BlockBuilder, ButtonStyle } from '@rocket.chat/apps-engine/definition/uikit';
+import { SttCommand } from './commands/Transcribe';
 import { settings } from './config/Settings';
 import { webhookEndpoint } from './endpoints/webhookEndpoint';
 import { initiatorMessage } from './helpers/initiatorMessage';
@@ -45,6 +46,9 @@ export class SpeechToTextApp extends App implements IPreMessageSentExtend {
             security: ApiSecurity.UNSECURE,
             endpoints: [new webhookEndpoint(this)],
         });
+        await configuration.slashCommands.provideSlashCommand(
+            new SttCommand(this)
+        );
 
 
     }
@@ -72,19 +76,20 @@ export class SpeechToTextApp extends App implements IPreMessageSentExtend {
         persist: IPersistence,
     ): Promise<IMessage> {
         console.log(message)
-        const block = new BlockBuilder(this.appId)
-        const attachment = extend.addAttachment(block)
-        block.addActionsBlock({
-            blockId: "sttQueue",
-            elements: [
-                block.newButtonElement({
-                    actionId: "Transcribe",
-                    text: block.newPlainTextObject("Transcribe"),
-                    value: JSON.stringify('hola'),
-                    style: ButtonStyle.PRIMARY,
-                }),
+        const rid = message.room.id
+        const fileId = message.file?._id
+        const fileName = message.file?.name
+        extend.addAttachment({
+            actionButtonsAlignment: MessageActionButtonsAlignment.HORIZONTAL,
+            actions: [
+                {
+                    text: 'Transcribe',
+                    type: MessageActionType.BUTTON,
+                    msg_in_chat_window: true,
+                    msg: `/stt ${rid} ${fileId} ${fileName}`,
+                },
             ],
-        });
+        })
 
 
         // const block = builder.addBlocks()
