@@ -5,7 +5,7 @@ import { generateJWT } from './JWTHelper'
 
 export class QueueAudio {
 
-    public host = "http://localhost:3000"
+    public host = "http://998ced59e545.ngrok.io"
 
 
     public async queue(message: IMessage, http: IHttp, read: IRead, modify: IModify): Promise<void> {

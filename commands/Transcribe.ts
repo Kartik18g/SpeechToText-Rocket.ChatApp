@@ -10,7 +10,10 @@ import {
 } from "@rocket.chat/apps-engine/definition/accessors";
 import { App } from "@rocket.chat/apps-engine/definition/App";
 import { setStatusMessage } from "../helpers/statusMessage";
+import { generateJWT } from '../helpers/JWTHelper'
+
 import { initiatorMessage } from "../helpers/initiatorMessage";
+import { QueueAudio } from "../helpers/QueueAudio";
 
 export class SttCommand implements ISlashCommand {
     public command = "stt";
@@ -28,7 +31,8 @@ export class SttCommand implements ISlashCommand {
         persistence: IPersistence
     ): Promise<void> {
         // Gettint the roomId and fileId from slash command arguments and userId from slash command context
-        const [rid, fileId, fileName] = context.getArguments()
+        const [rid, fileId, messageId, audioURL] = context.getArguments()
+
         // // console.log('These are the context arguments===>>>', { rid, fileId, userId: context.getSender().id })
         // setStatusMessage(modify, context, { rid, fileId, userId: context.getSender().id, senderId })
         // console.log('this is the context', context)
@@ -40,7 +44,21 @@ export class SttCommand implements ISlashCommand {
             room: room,
             sender: sender,
         };
+        var jwtToken = generateJWT({
+            typ: 'JWT',
+            alg: 'HS256',
+        }, {
+            rid: rid,
+            userId: sender.id,
+            fileId: fileId,
+            messageId: messageId,
+            secret: "Pia"
+        }, 'Pia')
 
-        await initiatorMessage({ data, modify, message: `"${fileName}" is queued for transcription` });
+        const Queuer = new QueueAudio
+        // Queuer.queue()
+
+        await initiatorMessage({ data, modify, message: `file queued for transcription` });
+
     }
 }

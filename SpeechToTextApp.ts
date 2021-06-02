@@ -75,10 +75,12 @@ export class SpeechToTextApp extends App implements IPreMessageSentExtend {
         http: IHttp,
         persist: IPersistence,
     ): Promise<IMessage> {
-        console.log(message)
+        console.log("executePreMessageSentExtend message hai ye----->>>>", message)
         const rid = message.room.id
         const fileId = message.file?._id
-        const fileName = message.file?.name
+        const messageId = message.id
+        const audioURL = message.attachments && message.attachments[0].audioUrl
+
         extend.addAttachment({
             actionButtonsAlignment: MessageActionButtonsAlignment.HORIZONTAL,
             actions: [
@@ -86,11 +88,10 @@ export class SpeechToTextApp extends App implements IPreMessageSentExtend {
                     text: 'Transcribe',
                     type: MessageActionType.BUTTON,
                     msg_in_chat_window: true,
-                    msg: `/stt ${rid} ${fileId} ${fileName}`,
+                    msg: `/stt ${rid} ${fileId} ${messageId} ${audioURL}`,
                 },
             ],
         })
-
 
         // const block = builder.addBlocks()
 
