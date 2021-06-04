@@ -10,6 +10,7 @@ import {
     IApiRequest,
     IApiResponse,
 } from "@rocket.chat/apps-engine/definition/api";
+import { QueueAudio } from "../helpers/QueueAudio";
 
 export class webhookEndpoint extends ApiEndpoint {
     public path = "stt-webhook";
@@ -22,7 +23,13 @@ export class webhookEndpoint extends ApiEndpoint {
         http: IHttp,
         persis: IPersistence
     ): Promise<IApiResponse> {
+        console.log("this is the reponse", request.content)
         this.app.getLogger().debug(request.content);
+        const { transcript_id } = request.content
+        const Queuer = new QueueAudio
+
+        await Queuer.getTranscription(transcript_id, http, read)
+
         const message = await modify.getCreator().startMessage();
 
         const sender = await read.getUserReader().getById("rocket.cat");

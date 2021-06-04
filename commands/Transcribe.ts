@@ -44,19 +44,10 @@ export class SttCommand implements ISlashCommand {
             room: room,
             sender: sender,
         };
-        var jwtToken = generateJWT({
-            typ: 'JWT',
-            alg: 'HS256',
-        }, {
-            rid: rid,
-            userId: sender.id,
-            fileId: fileId,
-            messageId: messageId,
-            secret: "Pia"
-        }, 'Pia')
+
 
         const Queuer = new QueueAudio
-        // Queuer.queue()
+        Queuer.queue(rid, fileId, messageId, sender.id, audioURL, http, read)
 
         await initiatorMessage({ data, modify, message: `file queued for transcription` });
 

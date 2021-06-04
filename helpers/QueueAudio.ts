@@ -1,14 +1,14 @@
 import { IHttp, ILogger, IModify, IRead } from "@rocket.chat/apps-engine/definition/accessors";
 import { IMessage } from "@rocket.chat/apps-engine/definition/messages";
-import { generateJWT } from './JWTHelper'
+import { generateJWT, getPayload } from './JWTHelper'
 
 
 export class QueueAudio {
 
-    public host = "http://998ced59e545.ngrok.io"
+    public host = "http://a6054ffebbd5.ngrok.io"
 
 
-    public async queue(message: IMessage, http: IHttp, read: IRead, modify: IModify): Promise<void> {
+    public async queue(rid, fileId, messageId, userId, audioUrl, http: IHttp, read: IRead): Promise<void> {
 
 
         const api_key: string = await read
@@ -19,27 +19,23 @@ export class QueueAudio {
             .getEnvironmentReader()
             .getSettings()
             .getValueById("api-provider");
-        console.log(api_key, api_provider)
 
         // console.log('Messagesentpostfromapp-->>', message)
-        console.log(message.room.id)
-        console.log(message.sender.id)
-        console.log(message.file?._id)
+
 
         try {
 
             if (api_key && api_provider) {
                 // Get attachment using Imessage
-                const attachment = message.attachments;
-                const audioUrl = attachment && attachment[0].audioUrl;
                 // Use JWT helper to get generate the token
                 var jwtToken = generateJWT({
                     typ: 'JWT',
                     alg: 'HS256',
                 }, {
-                    rid: message.room.id,
-                    userId: message.sender.id,
-                    fileId: message.file?._id,
+                    rid,
+                    userId,
+                    fileId,
+                    messageId,
                     secret: "Pia"
                 }, 'Pia')
                 // Appending the JWT token to audioURL and getting the final recording URL which is to be sent to the provider
@@ -68,7 +64,6 @@ export class QueueAudio {
                                     ["content-type"]: "application/json",
                                 },
                             });
-
                             console.log(response.data);
                             break;
                     }
@@ -76,19 +71,34 @@ export class QueueAudio {
                     console.log(err);
                 }
             } else {
-                console.log("api keys toh daalde lawdeya");
+                console.log("Please provide the API keys");
             }
         } catch (error) {
             console.log(error)
         }
     }
 
-    public test() {
-        console.log("hifromadp")
+    public async getTranscription(tid: string, http: IHttp, read: IRead): Promise<void> {
+        const reqUrl = `https://api.assemblyai.com/v2/transcript/${tid}`
+        const api_key: string = await read
+            .getEnvironmentReader()
+            .getSettings()
+            .getValueById("api-key");
+        var response = await http.get(reqUrl, {
+            headers: {
+                ["authorization"]: `${api_key}`,
+                ["content-type"]: "application/json",
+            },
+        });
+
+        const data = response.data
+        const { audio_url, text } = data
+        console.log({ audio_url, text })
+
+        const token = audio_url.split('token=')[1]
+
+        const payload = getPayload(token.split("&")[0])
+        const { messageId } = payload.context
+
     }
 }
-
-function generateJWTfunc(generateJWTfunc: any) {
-    throw new Error("Function not implemented.");
-}
-
